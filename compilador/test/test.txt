@@ -1,0 +1,3 @@
+void impresion() {
+      println(2+2+2);
+}
