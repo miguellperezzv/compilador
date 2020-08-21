@@ -12,7 +12,7 @@ grammar Simple;
 programa:  VOID ID P_ABRIR P_CERRAR L_ABRIR sentencia* L_CERRAR ;
 
 
-sentencia: declaracion | asignacion | println;
+sentencia: declaracion | asignacion | println |condicional;
 declaracion: INTEGER ID P_COMA
 	 {symbolTable.put($ID.text,0);};
 	 
@@ -21,20 +21,32 @@ asignacion: ID ASIGN expresion P_COMA
 	
 println: PRINTLN P_ABRIR expresion P_CERRAR P_COMA 
 	{System.out.println($expresion.value);};
+	
+condicional : IF P_ABRIR expresion P_CERRAR 
+	L_ABRIR sentencia* L_CERRAR
+	ELSE 
+	L_ABRIR sentencia* L_CERRAR;
 
 expresion returns [Object value]: 
-t1 = term {$value = (int)$t1.value;}
-(PLUS t2=term{$value=(int)$value + (int)$t2.value;})*; 
+t1 = factor {$value = (int)$t1.value;}
+(PLUS t2=factor{$value=(int)$value + (int)$t2.value;})*; 
+
+factor returns [Object value]:  t1 = term {$value = (int)$t1.value;}
+ (MULT	t2=term{$value=(int)$value * (int)$t2.value;})*;
 
 term returns [Object value]: NUMERO {$value = Integer.parseInt($NUMERO.text);} 
-| 
-ID {$value = symbolTable.get($ID.text);};
+| ID {$value = symbolTable.get($ID.text);}
+| BOOLEAN 
+| P_ABRIR expresion P_CERRAR;
 
 
 VOID: 	'void';
 PROGRAM: 'program';
 INTEGER: 'int';
 PRINTLN: 'println';
+IF : 'if';
+ELSE : 'else';
+
 
 
 PLUS: '+';
@@ -60,6 +72,8 @@ P_CERRAR : ')';
 L_ABRIR : '{';
 L_CERRAR : '}';
 P_COMA : ';';
+
+BOOLEAN : 'true' | 'false';
 
 /*IDENTIFICADORES */
 ID: [a-zA-Z_][a-zA-Z0-9_]*;
